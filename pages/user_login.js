@@ -12,10 +12,10 @@ import "react-toastify/dist/ReactToastify.css";
 
 function User_login() {
   const router = useRouter();
-  const { login, currentUser, signInWithGoogle } = useAuth();
+  const { login, currentUser, signInWithGoogle, reset } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  console.log(email);
   const signUpWithGoogle = () => {
     // e.preventDefault();
     // console.log(email,password)
@@ -36,11 +36,28 @@ function User_login() {
       })
       .catch((error) => console.log(error));
   };
+  const UserPasswordReset = (e) => {
+    e.preventDefault();
+    // toast("Please Write The Email There");
+    // console.log("okokok");
+
+    if (!email) {
+      toast("Please Write The Email There");
+    }
+
+    reset(email)
+      .then(() => {
+        toast("Please Check Your Mail");
+      })
+      .catch((error) => {
+        toast(error.message);
+      });
+  };
 
   const Userlogin = (e) => {
     e.preventDefault();
     if (!email || !password) {
-      toast('Credentials not valid.')
+      toast("Credentials not valid.");
       // alert("Credentials not valid.");
     }
     login(email, password)
@@ -55,8 +72,8 @@ function User_login() {
     <>
       <ToastContainer />
       <Link passHref href="/">
-      <a>
-        <CgBackspace className="cursor-pointer h-10 w-10 m-8" />
+        <a>
+          <CgBackspace className="cursor-pointer h-10 w-10 m-8" />
         </a>
       </Link>
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -134,8 +151,9 @@ function User_login() {
                   href="#"
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
-                  {" "}
-                  Forgot your password?{" "}
+                  <button onClick={UserPasswordReset}>
+                    Forgot your password?
+                  </button>
                 </a>
               </div>
             </div>

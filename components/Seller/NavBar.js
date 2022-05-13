@@ -35,10 +35,16 @@ const NavBar = () => {
                   <span className="font-bold ml-3 text-xl">SELLER PAGE</span>
                 </a>
               </Link>
+              <p className="text-gray-600 text-xs italic">
+                {currentSeller && `Please Do not Refresh After Login`}
+              </p>
               <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
                 {/* <Link href={"/Seller/SellerLogin"}>
                   <a className="mr-5 hover:text-gray-900">Tour</a>
                 </Link> */}
+                <Link href={"/Seller/SellerLogin"}>
+                  <a className="mr-5 hover:text-gray-900">Orders</a>
+                </Link>
                 <Link href={"/Seller/SellerLogin"}>
                   <a className="mr-5 hover:text-gray-900">Bike</a>
                 </Link>
@@ -61,10 +67,24 @@ const NavBar = () => {
                   <span className="font-bold ml-3 text-xl">SELLER PAGE</span>
                 </a>
               </Link>
+              <div className="md:ml-auto flex flex-wrap items-center text-base justify-center">
+                <h2 className="text-center text-xs text-indigo-500 tracking-widest font-medium title-font mb-1">
+                  Welcome!{" "}
+                  {currentSeller && `the user :${currentSeller.user.email}`}
+                  <p className="text-xs italic text-indigo-500 tracking-widest font-medium title-font mb-1">
+                    {currentSeller && `Please Do not Refresh After Login`}
+                  </p>
+                  {!currentSeller &&
+                    `You need to SignUp or Login to access these pages`}
+                </h2>
+              </div>
               <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center">
                 {/* <Link href={"/Seller/Tour"}>
                   <a className="mr-5 hover:text-gray-900">Tour</a>
                 </Link> */}
+                <Link href={"Tour"}>
+                  <a className="mr-5 hover:text-gray-900">Orders</a>
+                </Link>
                 <Link href={"/Seller/bike"}>
                   <a className="mr-5 hover:text-gray-900">Bike</a>
                 </Link>

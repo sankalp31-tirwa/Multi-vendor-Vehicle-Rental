@@ -11,14 +11,13 @@ function classNames(...classes) {
 }
 
 export default function Example() {
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
   const Userlogout = (e) => {
     e.preventDefault();
     logout();
   };
 
   return (
-
     <Menu as="div" className="relative inline-block text-left">
       <div>
         <Menu.Button className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
@@ -80,6 +79,9 @@ export default function Example() {
                     )}
                   >
                     Sign out
+                    <p className="text-gray-600 text-xs italic">
+                      ({currentUser.email})
+                    </p>
                   </button>
                 )}
               </Menu.Item>

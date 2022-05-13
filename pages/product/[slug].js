@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useAuth } from "../../src/contexts/AuthContext";
 import { database } from "../../src/utils/init-firebase";
 import React, { useEffect, useState } from "react";
+// import firebase from "firebase";
 
 import {
   collection,
@@ -12,14 +13,103 @@ import {
   addDoc,
   getDocs,
   doc,
+  setDoc,
   updateDoc,
   deleteDoc,
   getDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
-export let slugPrice = 5;
+// export let slugPrice = 6;
 const Post = () => {
+  const router = useRouter();
+
+  var slugPrice;
+  const { currentUser, fireDatas, BikeDate } = useAuth();
+  // console.log("Time");
+  // console.log(firebase.firestore.FieldValue.serverTimestamp());
   const [slugData, setslugData] = useState({});
+  // console.log("slugData 101");
+  console.log("cust", currentUser);
+  console.log("slugData", slugData);
+  // console.log(slugData);
+  // console.log(slugData);
+
+  slugPrice = slugData.Price;
+  // console.log("slugData 400");
+  // console.log(slugPrice);
+  console.log("data ", BikeDate);
+
+  async function check() {
+    const docRef = doc(database, "SellerBikeInfo", slug);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      if (docSnap.data().CabAvailable != true) {
+        alert("Out of Stock");
+        router.push("/bike");
+        return;
+      }
+    } else {
+      const docRef = doc(database, "SellercabInfo", slug);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        if (docSnap.data().CabAvailable != true) {
+          alert("Out of Stock");
+          router.push("/cab");
+          return;
+        }
+      }
+    }
+    // const q = query(
+    //   collection(database, "SellerBikeInfo", slug),
+    //   where("CabAvailable", "==", true)
+    // );
+  }
+
+  async function updateAD(id) {
+    const docRef = doc(database, "SellercabInfo", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      updateDoc(docRef, {
+        CabAvailable: false,
+      })
+        .then(() => {
+          // alert("AD Updated");
+          // getData();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      const docRef = doc(database, "SellerBikeInfo", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        updateDoc(docRef, {
+          CabAvailable: false,
+        })
+          .then(() => {
+            // alert("AD Updated");
+            // getData();
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    }
+  }
+
+  async function writeUserData(user) {
+    const docRef = doc(collection(database, "CustomerOrder"));
+    await setDoc(docRef, user)
+      .then(() => {
+        // toast("Submitted Successfully");
+        // window.location.reload();
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   const makePayment = async () => {
     console.log("here...");
     const res = await initializeRazorpay();
@@ -30,14 +120,22 @@ const Post = () => {
     }
 
     // Make API call to the serverless API
-    const data = await fetch("/api/razorpay", { method: "POST" }).then((t) =>
-      t.json()
-    );
-    console.log(data);
+    const data = await fetch("/api/razorpay", {
+      method: "POST",
+      body: JSON.stringify({ slugPrice }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((t) => t.json());
+    console.log("Not", data);
+
+    check();
+
     var options = {
       key: process.env.RAZORPAY_KEY, // Enter the Key ID generated from the Dashboard
       name: "NE Developers Pvt Ltd",
       currency: data.currency,
+      // slugPrice: 10,
       amount: data.amount,
       order_id: data.id,
       description: "Thankyou for choosing Us",
@@ -45,9 +143,38 @@ const Post = () => {
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYABovmmedfoIrv3zBO7mHaE0ZsacP-NFJrg&usqp=CAU",
       handler: function (response) {
         // Validate payment at server - using webhooks is a better idea.
-        alert(response.razorpay_payment_id);
-        alert(response.razorpay_order_id);
-        alert(response.razorpay_signature);
+        // alert(response.razorpay_payment_id);
+        // alert(response.razorpay_order_id);
+        // alert(response.razorpay_signature);
+        alert("Payment Successful");
+        console.log(
+          "response.razorpay_payment_id",
+          response.razorpay_payment_id
+        );
+        console.log("response.razorpay_order_id", response.razorpay_order_id);
+        console.log("response.razorpay_signature", response.razorpay_signature);
+
+        // const myDate = new Date(Date.now());
+
+        var user = {
+          Bookingdate: BikeDate,
+          Date: new Date().toLocaleDateString("en-US"),
+          Time: new Date().toLocaleTimeString("en-US"),
+          Seller: slugData.uid,
+          // CabAvailable: false,
+          Cabname: slugData.CabName,
+          address: slugData.Location,
+          uid: slugData.uid,
+          Price: slugData.Price,
+          PaymentID: response.razorpay_payment_id,
+          orderId: response.razorpay_order_id,
+          ImageUrl: slugData.ImageUrl,
+          CustomerUserID: currentUser.uid,
+        };
+        // console.log(slugData.uid);
+        // alert(slug);
+        updateAD(slug);
+        writeUserData(user);
       },
       // prefill: {
       //   name: "NE Developer's",
@@ -78,43 +205,44 @@ const Post = () => {
   const Hero = ({ onClick }) => {
     return (
       <div className="relative z-10 flex flex-col md:flex-row mt-10 items-center  max-w-6xl justify-evenly mx-auto">
-        <div className="bg-gradient-to-r from-[#3e4044] to-[#1D2328] p-[1px] rounded-md mb-4">
-          <button
-            onClick={onClick}
-            className="px-2 bg-gradient-to-r from-[#2E3137] to-[#1D2328] rounded-md w-full py-4 shadow-xl drop-shadow-2xl text-gray-300 font-bold"
-          >
+        {/* <div className="bg-gradient-to-r from-[#3e4044] to-[#1D2328] p-[1px] rounded-md mb-4"> */}
+        <button
+          onClick={onClick}
+          className="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800"
+        >
+          <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
             Book Now!
-          </button>
-        </div>
+          </span>
+        </button>
+        {/* </div> */}
       </div>
     );
   };
 
-  const [Slugdata, setSlugdata] = useState([]);
+  const [Slugdata, setSlugdata] = useState();
   const [isLoading, setisLoding] = useState(true);
 
-  const router = useRouter();
   const { slug } = router.query;
   // useEffect(async (slug) => {
   //   await readData(slug);
   // }, []);
 
-  async function writeCartData() {
-    var studentsClassroomRef = database
-      .collection("users")
-      .doc(slugData.uid)
-      .collection("Users_cart");
+  // async function writeCartData() {
+  //   var studentsClassroomRef = database
+  //     .collection("users")
+  //     .doc(slugData.uid)
+  //     .collection("Users_cart");
 
-    studentsClassroomRef
-      .doc(slugData.id)
-      .set({})
-      .then(function () {
-        console.log("Document Added ");
-      })
-      .catch(function (error) {
-        console.error("Error adding document: ", error);
-      });
-  }
+  //   studentsClassroomRef
+  //     .doc(slugData.id)
+  //     .set({})
+  //     .then(function () {
+  //       console.log("Document Added ");
+  //     })
+  //     .catch(function (error) {
+  //       console.error("Error adding document: ", error);
+  //     });
+  // }
 
   async function readData(slug) {
     // const citiesRef = collection(database, "SellercabInfo");
@@ -132,13 +260,14 @@ const Post = () => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setslugData(docSnap.data());
-          slugPrice = slugData.Price;
+          // slugPrice = slugData.Price;
           setisLoding(false);
         }
       }
     } catch (e) {
       console.log(e);
     }
+    // setSlugdata(slugData.Price);
 
     // setslugData(slugData ? slugData : null);
     // const [slugData, setslugData] = useState(null);
@@ -154,6 +283,19 @@ const Post = () => {
     // console.table(docSnap.data());
     // console.table(querySnapshot);
   }
+  // console.log(Slugdata);
+  // console.log("slugData.Price");
+  // slugPrice = slugData.Price;
+  // setSlugdata(slugPrice);
+  // console.log(Slugdata);
+  // console.log("slugPrice");
+
+  // console.log(slugData.Price);
+  // console.log("slugPrice:");
+  // console.log(slugPrice);
+  // console.log("slugPrice:");
+  // console.log(Slugdata);
+
   // console.log("this", slugPrice);
 
   // console.table(slugData);
@@ -194,10 +336,11 @@ const Post = () => {
             />
             <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
               <h2 className="text-sm title-font text-gray-500 tracking-widest">
-                {slug}
+                {/* {slug}  */}
+                {slugData.CabName}
               </h2>
               <h1 className="text-gray-900 text-3xl title-font font-medium mb-1">
-                {slugData.CabType}
+                {slugData.CabName}
               </h1>
               <div className="flex mb-4">
                 {/* <span className="flex items-center">
@@ -298,12 +441,13 @@ const Post = () => {
                 </span> */}
               </div>
               <p className="leading-relaxed">
-                Fam locavore kickstarter distillery. Mixtape chillwave tumeric
+                {/* Fam locavore kickstarter distillery. Mixtape chillwave tumeric
                 sriracha taximy chia microdosing tilde DIY. XOXO fam indxgo
                 juiceramps cornhole raw denim forage brooklyn. Everyday carry +1
                 seitan poutine tumeric. Gastropub blue bottle austin listicle
                 pour-over, neutra jean shorts keytar banjo tattooed umami
-                cardigan.
+                cardigan. */}
+                {slugData.Location}
               </p>
               <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-100 mb-5"></div>
               <div className="flex">
@@ -314,7 +458,7 @@ const Post = () => {
                   // onClick={writeCartData}
                   className="flex ml-auto  border-0 py-2 px-6 rounded"
                 >
-                  <Hero onClick={() => makePayment} />
+                  <Hero onClick={makePayment} />
                 </button>
               </div>
             </div>

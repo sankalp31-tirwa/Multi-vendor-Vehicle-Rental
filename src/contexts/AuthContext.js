@@ -41,6 +41,7 @@ export default function AuthContextProvider({ children }) {
   const [fireDatas, setFireData] = useState([]);
   const [currentSeller, setcurrentSeller] = useState(null);
   const router = useRouter();
+  const [BikeDate, setBikeDate] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -91,7 +92,9 @@ export default function AuthContextProvider({ children }) {
         return response.user.uid;
       }
     } else {
-      console.log("not exist");
+      // console.log("not exist");
+      console.log("not a Seller", response.user.email);
+      alert("Not Registered ");
     }
   }
   async function SelleronlyLogin(email, password) {
@@ -112,12 +115,15 @@ export default function AuthContextProvider({ children }) {
   // }
   async function GetData(data) {
     // console.log(data.Location);
+    setBikeDate(data.StartDate);
 
     const citiesRef = collection(database, "SellercabInfo");
     const q = query(
       citiesRef,
       where("Location", "==", data.Location),
-      where("CabName", "==", data.CabType)
+      where("CabName", "==", data.CabType),
+      where("CabAvailable", "==", true)
+
       // where("StartDate", "<=", data.StartDate),
     );
     const querySnapshot = await getDocs(q);
@@ -152,11 +158,16 @@ export default function AuthContextProvider({ children }) {
   }
   async function GetBikeData(data) {
     // console.log(data.Location);
-
+    setBikeDate(data.StartDate);
     const citiesRef = collection(database, "SellerBikeInfo");
     const q = query(
       citiesRef,
-      where("Location", "==", data.Location)
+      where("Location", "==", data.Location),
+      where("CabName", "==", data.Cabtype),
+      where("Availabledate", ">=", data.No_ofDays),
+      // where("Availabledate", "<=", 0),
+      where("CabAvailable", "==", true)
+
       // where("StartDate", "<=", data.StartDate),
     );
     const querySnapshot = await getDocs(q);
@@ -215,6 +226,55 @@ export default function AuthContextProvider({ children }) {
     return articles;
   }
 
+  async function ReadCustomerorder() {
+    const citiesRef = collection(database, "CustomerOrder");
+    const q = query(citiesRef, where("CustomerUserID", "==", currentUser.uid));
+
+    const querySnapshot = await getDocs(q);
+
+    // await getDocs(q)
+    querySnapshot.forEach((doc) => {
+      // setFireData(
+      //   .map((data) => {
+      //     return { ...data.data(), id: data.id };
+      //   })
+      // );
+
+      articles.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+
+      // console.table(articles);
+    });
+
+    return articles;
+  }
+  async function ReadCustomerorderforSeller() {
+    const citiesRef = collection(database, "CustomerOrder");
+    const q = query(citiesRef, where("Seller", "==", currentSeller.uid));
+
+    const querySnapshot = await getDocs(q);
+
+    // await getDocs(q)
+    querySnapshot.forEach((doc) => {
+      // setFireData(
+      //   .map((data) => {
+      //     return { ...data.data(), id: data.id };
+      //   })
+      // );
+
+      articles.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+
+      // console.table(articles);
+    });
+
+    return articles;
+  }
+
   const value = {
     currentUser,
     fireDatas,
@@ -229,6 +289,9 @@ export default function AuthContextProvider({ children }) {
     readData,
     currentSeller,
     SelleronlyLogin,
+    ReadCustomerorder,
+    BikeDate,
+    ReadCustomerorderforSeller,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

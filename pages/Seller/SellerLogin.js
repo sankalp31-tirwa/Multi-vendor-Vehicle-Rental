@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 function Sellermain() {
   const router = useRouter();
-  const { login, currentUser, SelleronlyLogin } = useAuth();
+  const { login, currentUser, SelleronlyLogin, reset } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -45,6 +45,21 @@ function Sellermain() {
     //     router.push("/Seller/SellerSignup");
     //   });
   };
+  const UserPasswordReset = (e) => {
+    e.preventDefault();
+    if (!email) {
+      toast("Please Write The Email There");
+    }
+
+    reset(email)
+      .then(() => {
+        toast("Please Check Your Mail");
+      })
+      .catch((error) => {
+        toast(error.message);
+      });
+  };
+
   return (
     <>
       <ToastContainer />
@@ -93,7 +108,9 @@ function Sellermain() {
                   href="#"
                   className="font-medium text-black-600 hover:text-indigo-500"
                 >
-                  Forgot your password?
+                  <button onClick={UserPasswordReset}>
+                    Forgot your password?
+                  </button>
                 </a>
               </div>
             </div>

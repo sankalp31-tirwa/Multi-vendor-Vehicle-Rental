@@ -34,13 +34,14 @@ function Cab() {
   // , "2", "3", "4", "5"];
   const { currentUser, currentSeller } = useAuth();
 
+  // const [dates, setDates] = useState(new Date().toLocaleDateString("en-US"));
   const [dates, setDates] = useState(new Date());
   const [imageUpload, setImageUpload] = useState(null);
   const [imageName, setimageName] = useState("");
   const [CabName, setCabName] = useState("");
   const [Location, setLocation] = useState("");
   const [price, setprice] = useState(null);
-  const [availabledate, setavailabledate] = useState(null);
+  // const [availabledate, setavailabledate] = useState(null);
   const [url, seturl] = useState("");
   const [isUpdate, setIsUpdate] = useState(false);
   const [fireData, setFireData] = useState([]);
@@ -49,6 +50,7 @@ function Cab() {
   const [isPreview, setisPreview] = useState(false);
   const [fireImageData, setfireImageData] = useState([]);
   const Imagearticles = [];
+  const [Ad, setAD] = useState(false);
 
   const car = {
     Default:
@@ -75,6 +77,7 @@ function Cab() {
     setLocation(e.target.value);
     // console.log(Location);
   }
+  // console.log(dates);
 
   // const [imageUrls, setImageUrls] = useState([]);
 
@@ -99,6 +102,7 @@ function Cab() {
     await setDoc(docRef, data)
       .then(() => {
         toast("Cab Details Has been Submitted Successfully");
+        setprice("");
         getData();
 
         // // getData();
@@ -127,7 +131,7 @@ function Cab() {
       })
     );
     setisPreview(true);
-    console.log("hello");
+    // console.log("hello");
 
     console.log(fireData[0]);
   };
@@ -151,12 +155,12 @@ function Cab() {
   // };
 
   const uploadFile = () => {
-    if (!s || !CabName || !Location || !price || !availabledate) {
+    if (!s || !CabName || !Location || !price) {
       toast("Data missing");
       return;
     }
     // const iname = imageUpload.name + v4();
-    // setisLoding(true);
+    setisLoding(true);
     // const iname = v4();
 
     // setimageName(iname);
@@ -166,6 +170,7 @@ function Cab() {
     // setImageUrls((prev) => [...prev, url]);
     var data = {
       // imageName: imageName,
+      CabAvailable: true,
       uid: currentUser.uid,
       ImageUrl: s,
       CabName: CabName,
@@ -185,6 +190,10 @@ function Cab() {
   };
 
   const updateFields = (id) => {
+    if (!s || !CabName || !Location) {
+      toast("Data missing");
+      return;
+    }
     let fieldToEdit = doc(database, "SellercabInfo", id);
     updateDoc(fieldToEdit, {
       CabName: CabName,
@@ -197,28 +206,33 @@ function Cab() {
         alert("Data Updated");
         getData();
         // setDates([new Date()]);
-        setCabName("");
-        setImageUpload("");
-        setLocation("");
-        setprice(null);
-        setavailabledate(null);
-        setIsUpdate(false);
+        // setCabName("");
+        // setImageUpload("");
+        // setLocation("");
+        setprice("");
+        // setavailabledate(null);
+        // setIsUpdate(false);
       })
       .catch((err) => {
         console.log(err);
       });
   };
 
-  const deleteDocument = (id, imageName) => {
-    const desertRef = ref(storage, `SellerCabImages/${imageName}`);
-    console.log(imageName);
-    deleteObject(desertRef)
-      .then((res) => {
-        toast(res);
+  const updateAD = (id) => {
+    let fieldToEdit = doc(database, "SellercabInfo", id);
+    updateDoc(fieldToEdit, {
+      CabAvailable: Ad,
+    })
+      .then(() => {
+        alert("AD Updated");
+        getData();
       })
-      .catch((error) => {
-        toast(error.message);
+      .catch((err) => {
+        console.log(err);
       });
+  };
+
+  const deleteDocument = (id) => {
     let fieldToEdit = doc(database, "SellercabInfo", id);
     deleteDoc(fieldToEdit)
       .then(() => {
@@ -229,6 +243,7 @@ function Cab() {
         toast("Cannot Delete that field..");
       });
   };
+  // console.log("AD", fireData[0].CabAvailable);
 
   return (
     <>
@@ -342,14 +357,16 @@ function Cab() {
                               minDate={new Date()}
                               value={dates}
                               selected={dates}
-                              onChange={(date) => setDates(date)}
+                              onChange={setDates}
+                              // onChange={(date) => setDates(date.toLocaleDateString("en-US"))}
+
                               format="DD MMMM YYYY"
                               multiple
                               plugins={[<DatePanel key={dates} />]}
                             />
                           </div>
 
-                          <div className="flex-grow">
+                          {/* <div className="flex-grow">
                             <input
                               className="|| mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                               // id="Money"
@@ -360,7 +377,7 @@ function Cab() {
                                 setavailabledate(event.target.value)
                               }
                             />
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>
@@ -403,41 +420,41 @@ function Cab() {
                     </div>
                   </div> */}
                 </div>
-                {isUpdate ? (
+                {/* {isUpdate ? (
                   <button
                     onClick={updateFields}
                     className="flex mx-auto mt-16 text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
                   >
                     UPDATE
                   </button>
-                ) : (
-                  <div>
-                    <button
-                      onClick={uploadFile}
-                      className="flex mx-auto mt-16 text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-                    >
-                      {!isLoading && `Submit`}
-                      {isLoading && (
-                        <svg
-                          role="status"
-                          class="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
-                          viewBox="0 0 100 101"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                            fill="currentColor"
-                          />
-                          <path
-                            d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                            fill="currentFill"
-                          />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                )}
+                ) : ( */}
+                <div>
+                  <button
+                    onClick={uploadFile}
+                    className="flex mx-auto mt-16 text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                  >
+                    {!isLoading && `Submit`}
+                    {isLoading && (
+                      <svg
+                        role="status"
+                        class="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                        viewBox="0 0 100 101"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                          fill="currentColor"
+                        />
+                        <path
+                          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                          fill="currentFill"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {/* )} */}
               </div>
 
               {/* <button onClick={() => setShow(prev => !prev)}>Click</button>
@@ -480,9 +497,12 @@ function Cab() {
                         <div className="ml-4 flex flex-1 flex-col">
                           <div>
                             <div className="flex justify-between text-base font-medium text-gray-900">
-                              <h3>
-                                {/* <a href={product.href}> {data.id} </a> */}
-                              </h3>
+                              <>
+                                <h3>{product.CabAvailable && `AD Enabled`}</h3>
+                                <h3>
+                                  {!product.CabAvailable && `AD Disabled`}
+                                </h3>
+                              </>
                               <p className="ml-4 ">₹ {product.Price}.00</p>
                             </div>
                             <p className="mt-1 text-sm text-gray-500">
@@ -490,8 +510,55 @@ function Cab() {
                             </p>
                           </div>
                           <div className="flex flex-1 items-end justify-between text-sm">
+                            <>
+                              <div class="flex justify-center">
+                                <div>
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input appearance-none rounded-full h-4 w-4 border border-gray-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
+                                      type="radio"
+                                      value={true}
+                                      name="flexRadioDefault"
+                                      id="flexRadioDefault1"
+                                      onClick={() => setAD(true)}
+                                    />
+                                    <label
+                                      class="form-check-label inline-block text-gray-800"
+                                      for="flexRadioDefault1"
+                                    >
+                                      enable AD
+                                    </label>
+                                  </div>
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input appearance-none rounded-full h-4 w-4 border border-gray-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
+                                      type="radio"
+                                      value={false}
+                                      name="flexRadioDefault"
+                                      id="flexRadioDefault2"
+                                      onClick={() => setAD(false)}
+                                      checked
+                                    />
+                                    <label
+                                      class="form-check-label inline-block text-gray-800"
+                                      for="flexRadioDefault2"
+                                    >
+                                      disable AD
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <button
+                                className="flex mx-auto mt-16 text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                                onClick={() => updateAD(product.id)}
+                              >
+                                Update AD
+                              </button>
+                            </>
+
                             <p className="text-gray-500">
-                              <h3>Your UniqueID: {product.uid}</h3>
+                              {/* <h3>Your UniqueID: {product.uid}</h3> */}
                               <h3>Product ListId: {product.id}</h3>
                               <p>Loaction: {product.Location}</p>
                               {/* From {data.destination} To {data.destination2} */}
@@ -500,9 +567,7 @@ function Cab() {
                             <div className="grid grid-cols-1 ">
                               <button
                                 className="flex mx-auto mt-16 text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-                                onClick={() =>
-                                  deleteDocument(product.id, product.imageName)
-                                }
+                                onClick={() => deleteDocument(product.id)}
                               >
                                 Delete
                               </button>

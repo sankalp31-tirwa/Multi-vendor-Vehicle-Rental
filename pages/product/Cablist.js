@@ -16,9 +16,8 @@ import {
 } from "firebase/firestore";
 import { useAuth } from "../../src/contexts/AuthContext";
 
-
 function Index() {
-  const { fireDatas, currentUser } = useAuth();
+  const { fireDatas, currentUser, BikeDate } = useAuth();
   const [fireData, setFireData] = useState([]);
 
   useEffect(() => {
@@ -37,7 +36,7 @@ function Index() {
     //   })
     //   .catch((error) => console.log(error.message));
     // console.log(Data);
-    console.log(fireDatas);
+    console.log("data ", BikeDate);
   };
 
   // const [article, setArticle] = useState(null);
@@ -63,18 +62,18 @@ function Index() {
             <>
               {fireDatas.map((product) => (
                 <li key={product.id} className="flex">
-                <Link href={`/product/${product.id}`}>
+                  <Link href={`/product/${product.id}`}>
                     <div className="w-full max-w-sm mx-auto rounded-md shadow-md overflow-hidden">
                       <div className="flex items-end justify-end h-56 w-full bg-cover">
                         <img
                           src={product.ImageUrl}
-                          alt={product.imageAlt}
+                          // alt={product.imageAlt}
                           className="h-full w-full object-contain object-center"
                         />
                       </div>
                       <div className="px-5 py-3">
                         <h3 className="text-gray-700 uppercase">
-                          {product.CabType}
+                          {product.CabName}
                         </h3>
                         <span className="text-gray-500 mt-2">
                           ₹ {product.Price}

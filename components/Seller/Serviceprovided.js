@@ -30,12 +30,6 @@ const Serviceprovided = () => {
       <section className="text-gray-600 body-font mb-8">
         <div className="container px-5 py-16 mx-auto">
           <div className="flex flex-col text-center w-full ">
-            <h2 className="text-xs text-indigo-500 tracking-widest font-medium title-font mb-1">
-              Welcome!{" "}
-              {currentSeller && `the user :${currentSeller.user.email}`}
-              {!currentSeller &&
-                `You need to SignUp or Login to access these pages`}
-            </h2>
             <h1 className="sm:text-3xl text-2xl font-medium title-font text-gray-900">
               Services We provide
             </h1>

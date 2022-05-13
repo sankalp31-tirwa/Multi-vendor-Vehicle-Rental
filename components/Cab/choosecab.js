@@ -36,12 +36,12 @@ function Choosecab() {
     Alto: "https://imgd.aeplcdn.com/664x374/cw/ec/39013/Maruti-Suzuki-Alto-Right-Front-Three-Quarter-154833.jpg?wm=0&q=75",
   };
   const s = car[Cabtype];
-  console.log(startDate);
+  // console.log(startDate);
   const uploadFile = () => {
     var data = {
       CabType: Cabtype,
       Location: Location,
-      StartDate: startDate,
+      StartDate: startDate.toLocaleDateString("en-US"),
     };
     // alert("submited");
     // console.log(data);
@@ -68,7 +68,7 @@ function Choosecab() {
 
   return (
     <>
-      <div className="flex justify-center ">
+      <div className="flex justify-center p-2 hover:animate-pulse">
         <img
           alt="Cab images"
           className="object-contain top rounded-lg w-5/6 sm:h-96 h-40"
